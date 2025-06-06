@@ -1,0 +1,1 @@
+import categories from '../../data/categories.json'; export default function handler(req, res) { res.status(200).json({ success: true, categories }); }
