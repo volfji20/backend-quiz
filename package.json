@@ -1,7 +1,7 @@
 {
   "name": "vercel-backend",
   "version": "1.0.0",
-  "main": "firebase.js",
+  "main": "firebase.ts",
   "scripts": {
     "build": "tsc",
     "dev": "vercel dev"
