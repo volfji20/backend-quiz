@@ -2,11 +2,14 @@
   "name": "vercel-backend",
   "version": "1.0.0",
   "main": "firebase.js",
-"scripts": {
-  "build": "tsc",
-  "dev": "vercel dev"
+  "scripts": {
+    "build": "tsc",
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "firebase-admin": "^11.10.1" 
+    "firebase-admin": "^11.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30"
   }
 }
