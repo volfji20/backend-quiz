@@ -1,16 +1,14 @@
 import admin from '../../firebase';
+import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const { userId } = req.query;
+  const userId = await getUserIdFromRequest(req)
 
-  if (!userId) {
-    return res.status(400).json({ success: false, message: 'Missing userId' });
-  }
-
+  const favSnap = await admin
   try {
     const favSnap = await admin.firestore()
       .collection('users')
