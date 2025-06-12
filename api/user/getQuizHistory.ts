@@ -1,15 +1,12 @@
 import admin from '../../firebase';
+import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ success: false, message: 'Missing userId' });
-  }
+  const userId = await getUserIdFromRequest(req)
 
   try {
     const snapshot = await admin

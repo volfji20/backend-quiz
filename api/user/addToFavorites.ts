@@ -1,13 +1,18 @@
 import admin from '../../firebase';
+import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest';
+
+//post metoda - protoze meni data
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const { userId, questionId, categoryName } = req.body;
+  const userId = await getUserIdFromRequest(req)
 
-  if (!userId || !questionId || !categoryName) {
+  const {questionId, categoryName } = req.body;
+
+  if ( !questionId || !categoryName) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
 
