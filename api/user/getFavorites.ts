@@ -1,18 +1,16 @@
 import admin from '../../firebase';
+import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ success: false, message: 'Missing userId' });
-  }
-
   try {
-    const favSnap = await admin.firestore()
+    const userId = await getUserIdFromRequest(req);
+
+    const favSnap = await admin
+      .firestore()
       .collection('users')
       .doc(userId)
       .collection('favorites')
@@ -36,6 +34,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ success: true, favorites: questions });
   } catch (error) {
+    console.error('Error in getFavorites:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 }
