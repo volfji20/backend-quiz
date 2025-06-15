@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
   try {
     const ref = admin.firestore()
-      .collection('favorites')
+      .collection('fake-test-table')
       .doc(userId)
       .collection('items')
       .doc(questionId);
