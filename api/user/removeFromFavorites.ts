@@ -16,9 +16,9 @@ export default async function handler(req, res) {
 
     const favRef = admin
       .firestore()
-      .collection('users')
-      .doc(userId)
       .collection('favorites')
+      .doc(userId)
+      .collection('items')
       .doc(questionId);
 
     const doc = await favRef.get();

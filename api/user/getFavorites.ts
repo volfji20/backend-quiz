@@ -11,9 +11,9 @@ export default async function handler(req, res) {
   const favSnap = await admin
   try {
     const favSnap = await admin.firestore()
-      .collection('users')
-      .doc(userId)
       .collection('favorites')
+      .doc(userId)
+      .collection('items')
       .get();
 
     const questionRefs = favSnap.docs.map(doc => doc.data().questionId);
