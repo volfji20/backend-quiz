@@ -16,10 +16,8 @@ export default async function handler(req, res) {
       .collection('items')
       .get();
 
-    const favoritesRaw = favSnap.docs.map(doc => ({...doc.data(),
-    }));
-    
-    console.log(`favoritesRaw jsou: ${JSON.stringify(favoritesRaw, null, 2)}`);
+    const favoritesRaw = favSnap.docs.map(doc => doc.data());
+
     if (favoritesRaw.length === 0) {
       return res.status(200).json({ success: true, favorites: [] });
     }
@@ -29,19 +27,38 @@ export default async function handler(req, res) {
         admin.firestore().collection('questions').doc(fav.questionId).get()
       )
     );
-    const questions = questionSnapshots
-      .filter(doc => doc.exists)
-      .map((doc, index) => ({
-        id: doc.id,
-        ...doc.data(),
-        favoriteMeta: {
-          categoryName: favoritesRaw[index].categoryName,
-          createdAt: favoritesRaw[index].createdAt,
-        },
-      }));
-      console.log(`questions jsou: ${JSON.stringify(questions, null, 2)}`);
 
-    return res.status(200).json({ success: true, favorites: questions });
+    const flatQuestions = questionSnapshots
+      .map((doc, index) => {
+        if (!doc.exists) return null;
+
+        const data = doc.data();
+        const meta = favoritesRaw[index];
+
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: meta.createdAt,
+          categoryName: meta.categoryName || data.category || 'Neznámá kategorie',
+        };
+      })
+      .filter(Boolean);
+
+    // ➕ Skupinování podle kategorie
+    const grouped = {};
+
+    flatQuestions.forEach(q => {
+      const cat = q.categoryName;
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(q);
+    });
+
+    const groupedArray = Object.keys(grouped).map(category => ({
+      categoryName: category,
+      questions: grouped[category],
+    }));
+
+    return res.status(200).json({ success: true, favorites: groupedArray });
   } catch (error) {
     console.error('Favorites error:', error.message);
     return res.status(500).json({ success: false, message: error.message });
