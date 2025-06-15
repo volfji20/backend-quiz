@@ -24,28 +24,23 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, favorites: [] });
     }
 
-    const questions = await Promise.all(
+    const questionSnapshots = await Promise.all(
       favoritesRaw.map(fav =>
         admin.firestore().collection('questions').doc(fav.questionId).get()
       )
     );
-    console.log(`fav questions jsou: ${JSON.stringify(questions, null, 2)}`);
-
-/*
     const questions = questionSnapshots
       .filter(doc => doc.exists)
-      .map((doc, index) => {
-        const favoriteInfo = favoritesRaw[index]; // přidáme i categoryName a createdAt z favorites
-        return {
-          id: doc.id,
-          ...doc.data(),
-          favoriteMeta: {
-            categoryName: favoriteInfo.categoryName,
-            createdAt: favoriteInfo.createdAt,
-          },
-        };
-      });
-*/
+      .map((doc, index) => ({
+        id: doc.id,
+        ...doc.data(),
+        favoriteMeta: {
+          categoryName: favoritesRaw[index].categoryName,
+          createdAt: favoritesRaw[index].createdAt,
+        },
+      }));
+      console.log(`questions jsou: ${JSON.stringify(questions, null, 2)}`);
+
     return res.status(200).json({ success: true, favorites: questions });
   } catch (error) {
     console.error('Favorites error:', error.message);
