@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const favoritesRaw = favSnap.docs.map(doc => ({...doc.data(),
     }));
     
-    console.log(`favoritesRaw jsou ${favoritesRaw}`);
+    console.log(`favoritesRaw jsou: ${JSON.stringify(favoritesRaw, null, 2)}`);
     if (favoritesRaw.length === 0) {
       return res.status(200).json({ success: true, favorites: [] });
     }
