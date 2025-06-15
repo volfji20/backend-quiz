@@ -16,18 +16,21 @@ export default async function handler(req, res) {
       .collection('items')
       .get();
 
-    const favoritesRaw = favSnap.docs.map(doc => doc.data());
+    const favoritesRaw = favSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     if (favoritesRaw.length === 0) {
       return res.status(200).json({ success: true, favorites: [] });
     }
 
-    const questionSnapshots = await Promise.all(
+    const questions = await Promise.all(
       favoritesRaw.map(fav =>
-        admin.firestore().collection('questions').doc(fav.questionId).get()
+        admin.firestore().collection('questions').doc(fav.id).get()
       )
     );
-
+/*
     const questions = questionSnapshots
       .filter(doc => doc.exists)
       .map((doc, index) => {
@@ -41,7 +44,7 @@ export default async function handler(req, res) {
           },
         };
       });
-
+*/
     return res.status(200).json({ success: true, favorites: questions });
   } catch (error) {
     console.error('Favorites error:', error.message);
