@@ -29,6 +29,8 @@ export default async function handler(req, res) {
         admin.firestore().collection('questions').doc(fav.questionId).get()
       )
     );
+    console.log(`fav questions jsou: ${JSON.stringify(favoritesRaw, null, 2)}`);
+
 /*
     const questions = questionSnapshots
       .filter(doc => doc.exists)
