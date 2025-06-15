@@ -9,19 +9,21 @@ export default async function handler(req, res) {
   try {
     const userId = await getUserIdFromRequest(req);
 
-    const favSnap = await admin
-      .firestore()
-      .collection('favorites')
-      .doc(userId)
-      .collection('items')
-      .get();
+    // 1. Získat dokument uživatele
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
 
-    const favoritesRaw = favSnap.docs.map(doc => doc.data());
+    if (!userDoc.exists) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const userData = userDoc.data();
+    const favoritesRaw = userData.favorites || [];
 
     if (favoritesRaw.length === 0) {
       return res.status(200).json({ success: true, favorites: [] });
     }
 
+    // 2. Načíst otázky podle questionId
     const questionSnapshots = await Promise.all(
       favoritesRaw.map(fav =>
         admin.firestore().collection('questions').doc(fav.questionId).get()
@@ -44,7 +46,7 @@ export default async function handler(req, res) {
       })
       .filter(Boolean);
 
-    // ➕ Skupinování podle kategorie
+    // 3. Seskupení podle kategorie
     const grouped = {};
 
     flatQuestions.forEach(q => {
