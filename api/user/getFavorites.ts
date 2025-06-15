@@ -16,18 +16,17 @@ export default async function handler(req, res) {
       .collection('items')
       .get();
 
-    const favoritesRaw = favSnap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
+    const favoritesRaw = favSnap.docs.map(doc => ({...doc.data(),
     }));
-
+    
+    console.log(`favoritesRaw jsou ${favoritesRaw}`);
     if (favoritesRaw.length === 0) {
       return res.status(200).json({ success: true, favorites: [] });
     }
 
     const questions = await Promise.all(
       favoritesRaw.map(fav =>
-        admin.firestore().collection('questions').doc(fav.id).get()
+        admin.firestore().collection('questions').doc(fav.questionId).get()
       )
     );
 /*
