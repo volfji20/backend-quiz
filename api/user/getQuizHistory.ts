@@ -22,8 +22,6 @@ export default async function handler(req, res) {
     }));
     console.log("history je:"+JSON.stringify(history))
 
-    
-
   const summary = {
     total: history.length,
     avgScore: history.length ? Math.round(history.reduce((acc, q) => acc + (q.score || 0), 0) / history.length) : 0,
