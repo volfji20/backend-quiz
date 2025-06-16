@@ -22,38 +22,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, incorrectAnswers: [] });
     }
 
-    const questionSnapshots = await Promise.all(
-      incorrectRaw.map(fav =>
-        admin.firestore().collection('questions').doc(fav.questionId).get()
-      )
-    );
-
-    const flatQuestions = questionSnapshots
-      .map((doc, index) => {
-        if (!doc.exists) return null;
-
-        const data = doc.data();
-        const meta = incorrectRaw[index];
-
-        return {
-          id: doc.id,
-          ...data,
-          createdAt: meta.createdAt,
-          categoryName: meta.categoryName || data.category || 'Neznámá kategorie',
-          incorrectMeta: {
-            chosenAnswer: meta.choiceB, // nebo meta.choiceX — jakékoli pole tam bude
-            ...meta
-          },
-        };
-      })
-      .filter(Boolean);
-
     const grouped = {};
 
-    flatQuestions.forEach(q => {
-      const cat = q.categoryName;
+    incorrectRaw.forEach(q => {
+      const cat = q.category || 'Neznámá kategorie';
       if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(q);
+      grouped[cat].push({
+        ...q,
+        incorrectMeta: {
+          chosenAnswer: q.choiceB, // uprav dle struktury, např. q.userChoice
+          ...q,
+        },
+      });
     });
 
     const groupedArray = Object.keys(grouped).map(category => ({
@@ -61,7 +41,7 @@ export default async function handler(req, res) {
       questions: grouped[category],
     }));
 
-    console.log("grouped array je:"+JSON.stringify(groupedArray));
+    console.log('grouped array je:', JSON.stringify(groupedArray));
 
     return res.status(200).json({ success: true, incorrectAnswers: groupedArray });
   } catch (error) {
