@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       id: doc.id,
       ...doc.data()
     }));
+    console.log("history je:"+history)
 
     return res.status(200).json({ success: true, history });
   } catch (error) {
