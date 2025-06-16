@@ -1,5 +1,5 @@
-import admin from '../../firebase'; // uprav dle své struktury
-import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest'; // ověření uživatele z tokenu
+import admin from '../../firebase';
+import { getUserIdFromRequest } from '../../utils/getUserIdFromRequest';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -14,20 +14,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: 'Missing questionId' });
     }
 
-    const favRef = admin
-      .firestore()
-      .collection('favorites')
-      .doc(userId)
-      .collection('items')
-      .doc(questionId);
+    const userRef = admin.firestore().collection('users').doc(userId);
+    const userDoc = await userRef.get();
 
-    const doc = await favRef.get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
-    if (!doc.exists) {
+    const favorites = userDoc.data().favorites || [];
+
+    const itemToRemove = favorites.find((item) => item.questionId === questionId);
+
+    if (!itemToRemove) {
       return res.status(404).json({ success: false, message: 'Favorite not found' });
     }
 
-    await favRef.delete();
+    await userRef.update({
+      favorites: admin.firestore.FieldValue.arrayRemove(itemToRemove)
+    });
 
     return res.status(200).json({ success: true, message: 'Otázka byla odebrána z oblíbených' });
   } catch (error) {

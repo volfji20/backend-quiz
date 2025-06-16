@@ -6,18 +6,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  const userId = await getUserIdFromRequest(req)
+  const userId = await getUserIdFromRequest(req);
 
   try {
     const snapshot = await admin
       .firestore()
-      .collection('quizHistory')
-      .doc(userId)
-      .collection('items')
-      .orderBy('timestamp', 'desc')
+      .collection('quiz')
+      .where('userId', '==', userId)
+      .orderBy('date', 'desc')
       .get();
 
-    const history = snapshot.docs.map(doc => doc.data());
+    const history = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return res.status(200).json({ success: true, history });
   } catch (error) {

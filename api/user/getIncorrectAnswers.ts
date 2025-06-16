@@ -41,8 +41,6 @@ export default async function handler(req, res) {
       questions: grouped[category],
     }));
 
-    console.log('grouped array je:', JSON.stringify(groupedArray));
-
     return res.status(200).json({ success: true, incorrectAnswers: groupedArray });
   } catch (error) {
     console.error('IncorrectAnswers error:', error.message);
