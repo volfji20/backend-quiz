@@ -20,9 +20,17 @@ export default async function handler(req, res) {
       id: doc.id,
       ...doc.data()
     }));
-    console.log("history je:"+history)
+    console.log("history je:"+JSON.stringify(history))
 
-    return res.status(200).json({ success: true, history });
+    
+
+  const summary = {
+    total: history.length,
+    avgScore: history.length ? Math.round(history.reduce((acc, q) => acc + (q.score || 0), 0) / history.length) : 0,
+    latest: history[0]?.date || null,
+  };
+
+  return res.status(200).json({ success: true, quizes: history, data: summary });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
