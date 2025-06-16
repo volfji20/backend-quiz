@@ -16,19 +16,50 @@ export default async function handler(req, res) {
       .orderBy('date', 'desc')
       .get();
 
-    const history = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    console.log("history je:"+JSON.stringify(history))
+    const history = snapshot.docs.map(doc => {
+      const data = doc.data();
 
-  const summary = {
-    total: history.length,
-    avgScore: history.length ? Math.round(history.reduce((acc, q) => acc + (q.score || 0), 0) / history.length) : 0,
-    latest: history[0]?.date || null,
-  };
+      return {
+        id: doc.id,
+        category: data.category || 'Unknown',
+        correctAnswerCount: data.correctAnswers || 0,
+        incorrectAnswerCount: data.totalQuestions - data.correctAnswers || 0,
+        totalQuestions: data.totalQuestions || 0,
+        rating: data.rating || 0,
+        questions: data.answers || [],
+        date: typeof data.date === 'string'
+          ? data.date
+          : data.date?.toDate?.().toISOString() || new Date().toISOString(),
+      };
+    });
 
-  return res.status(200).json({ success: true, quizes: history, data: summary });
+    // 🔢 Vytvoření souhrnu pro PerformanceIndicator
+    const totalQuizes = history.length;
+
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+
+    history.forEach(q => {
+      totalCorrect += q.correctAnswerCount;
+      totalQuestions += q.totalQuestions;
+    });
+
+    const successRate = totalQuestions > 0
+      ? Math.round((totalCorrect / totalQuestions) * 100)
+      : 0;
+
+    const badge =
+      successRate >= 80 ? 'Excellent' :
+      successRate >= 50 ? 'Average' :
+      'Poor';
+
+    const summary = {
+      badge,
+      totalQuizes,
+      successRate,
+    };
+
+    return res.status(200).json({ success: true, quizes: history, data: summary });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
